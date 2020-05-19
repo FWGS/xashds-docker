@@ -1,5 +1,5 @@
-[![GitHub Actions Docker Image CI](https://github.com/artkirienko/xashds-docker/workflows/Docker%20Image%20CI/badge.svg)](https://github.com/artkirienko/xashds-docker/actions)
-[![HitCount](http://hits.dwyl.com/artkirienko/xashds-docker.svg)](http://hits.dwyl.com/artkirienko/xashds-docker)
+[![GitHub Actions Docker Image CI](https://github.com/FWGS/xashds-docker/workflows/Docker%20Image%20CI/badge.svg)](https://github.com/FWGS/xashds-docker/actions)
+[![HitCount](http://hits.dwyl.com/FWGS/xashds-docker.svg)](http://hits.dwyl.com/FWGS/xashds-docker)
 
 ![banner](banner.png)
 
