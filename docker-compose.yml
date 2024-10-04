@@ -1,0 +1,8 @@
+services:
+  xash-ds:
+    image: artkirienko/xashds
+    container_name: xash
+    restart: always
+    command: +ip 0.0.0.0 +rcon_password 12345678
+    ports:
+      - '27015:27015/udp'
