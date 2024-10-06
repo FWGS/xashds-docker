@@ -1,4 +1,4 @@
-FROM debian:bookworm-slim
+FROM debian:bookworm-slim AS build
 
 ARG hlds_build=8308
 ARG amxmod_version=1.9.0-git5294
@@ -7,8 +7,6 @@ ARG hlds_url="https://github.com/DevilBoy-eXe/hlds/releases/download/$hlds_build
 ARG metamod_url="https://github.com/mittorn/metamod-p/releases/download/1/metamod.so"
 ARG amxmod_url="https://www.amxmodx.org/amxxdrop/1.9/amxmodx-$amxmod_version-base-linux.tar.gz"
 ARG jk_botti_url="http://koti.kapsi.fi/jukivili/web/jk_botti/jk_botti-$jk_botti_version-release.tar.xz"
-
-ENV XASH3D_BASEDIR=/opt/xash/xashds
 
 RUN groupadd -r xash && useradd -r -g xash -m -d /opt/xash xash
 RUN usermod -a -G games xash
@@ -19,8 +17,6 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
     curl \
     git \
     g++-multilib \
-    lib32gcc-s1 \
-    libstdc++6 \
     python3 \
     unzip \
     xz-utils \
@@ -74,6 +70,20 @@ RUN mv valve/liblist.gam valve/gameinfo.txt
 # Copy default config
 COPY valve valve
 
+# Second stage, used for running compiled XashDS
+FROM debian:bookworm-slim AS final
+
+ENV XASH3D_BASEDIR=/xashds
+RUN apt-get -y update && apt-get install -y --no-install-recommends \
+    lib32gcc-s1 \
+    lib32stdc++6 \
+    ca-certificates \
+    openssl 
+
+RUN groupadd xashds && useradd -m -g xashds xashds
+USER xashds
+WORKDIR /xashds
+COPY --chown=xashds:xashds --from=build /opt/xash/xashds .
 EXPOSE 27015/udp
 
 # Start server
