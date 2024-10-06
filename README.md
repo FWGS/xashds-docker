@@ -1,75 +1,74 @@
 [![GitHub Actions Docker Image CI](https://github.com/FWGS/xashds-docker/workflows/Docker%20Image%20CI/badge.svg)](https://github.com/FWGS/xashds-docker/actions)
 [![HitCount](http://hits.dwyl.com/FWGS/xashds-docker.svg)](http://hits.dwyl.com/FWGS/xashds-docker)
-
 ![banner](banner.png)
 
 # Xash3D FWGS Dedicated Server Docker
-
-## Xash3D FWGS Half-Life Dedicated Server as a Docker image
-
-Probably the fastest and easiest way to set up an old-school Xash3D FWGS
-Half-Life Deathmatch Dedicated Server (XashDS). You don't need to know
-anything about Linux or XashDS to start a server. You just need Docker and
-this image.
+Probably, the fastest and easiest way to set up an old-school Xash3D FWGS
+Half-Life Deathmatch Dedicated Server. You don't need to know
+anything about Linux or XashDS to start a server. You just need installed Docker and this image.
 
 ## Quick Start
+> **Note:** At the moment, we don't yet publishing pre-built images on Docker Hub. Therefore, you need to build it yourself.
 
-Start a new server by running:
+### Building XashDS image manually
+Clone this repository and build image with Docker Compose. Just two commands.
 
 ```bash
-docker run -it --rm -d -p27015:27015 -p27015:27015/udp artkirienko/xashds
+git clone https://github.com/FWGS/xashds-docker.git && cd xashds-docker
+sudo docker compose build
 ```
 
-Change the player slot size, map or `rcon_password` by running:
+Next, you can use this Compose file below as a base for your custom configuration. If you don't need custom configuration - just ignore it and continue to next step.
 
-```
-docker run -it --rm -d --name xash -p27015:27015 -p27015:27015/udp artkirienko/xashds +maxplayers 12 +rcon_password SECRET_PASSWORD
+```yaml
+services:
+  xashds:
+    image: xashdsdocker:latest
+    build: .
+    container_name: xashds
+    restart: always
+    tty: true
+    stdin_open: true
+    command: +map crossfire
+    ports:
+      - '27015:27015/udp'
 ```
 
 > **Note:** Any [server config command](http://sr-team.clan.su/K_stat/hlcommandsfull.html)
-  can be passed by using `+`. But it has to follow after the image name `artkirienko/xashds`.
+  can be passed to `command` section in Docker Compose file. 
 
-## What is included
-
-* Latest game assets via **SteamCMD** and
-  [HLDS Build](https://github.com/DevilBoy-eXe/hlds) version `8308`
-
-* [Xash3D](https://github.com/FWGS/xash3d) dedicated server
-
-  ```
-  Xash3D FWGS (build 1869, Linux-i386)
-  ```
-
-* [Metamod-p](https://github.com/mittorn/metamod-p) for Xash3D by mittorn
-  version `1.21p37`
-
-* [AMX Mod X](https://github.com/alliedmodders/amxmodx) version `1.8.2`
-
-* [jk_botti](https://github.com/Bots-United/jk_botti) version `1.43`
-
-* Minimal config present, such as `mp_timelimit`, `public 1` and mapcycle
-
-## Default mapcycle
-
-* crossfire.bsp
-* bounce.bsp
-* datacore.bsp
-* frenzy.bsp
-* gasworks.bsp
-* lambda_bunker.bsp
-* rapidcore.bsp
-* snark_pit.bsp
-* stalkyard.bsp
-* subtransit.bsp
-* undertow.bsp
-* boot_camp.bsp
-
-## Advanced
-
-In order to use a custom server config file, add your settings
-to `valve/config/server.cfg` of this project and mount the directory as volume
-to `/opt/steam/xashds/valve/config` by running:
+By default, server will start on 27015 UDP port. When you're finished with configuration and ready to start a server just run:
 
 ```bash
-docker run -it --rm -d -p27015:27015 -p27015:27015/udp -v $(pwd)/valve/config:/opt/steam/xashds/valve/config artkirienko/xashds
+sudo docker compose up -d
 ```
+
+After that, server will automatically start on system startup and auto-restarting in case of crash.
+
+If you want to stop a server and completely remove all containers, run:
+```bash
+sudo docker compose down
+```
+
+## What is included
+* Game assets from [HLDS](https://github.com/DevilBoy-eXe/hlds), build number `8308`
+* [Xash3D FWGS](https://github.com/FWGS/xash3d-fwgs) dedicated server, latest version
+* [Metamod-p](https://github.com/mittorn/metamod-p) for Xash3D by mittorn,
+  version `1.21p37`
+* [AMX Mod X](https://github.com/alliedmodders/amxmodx), version `1.9.0.5294`
+* [jk_botti](https://github.com/Bots-United/jk_botti), version `1.43`
+* Minimal config preset, such as `mp_timelimit`, `public 1` and mapcycle
+
+## Default mapcycle
+* crossfire
+* bounce
+* datacore
+* frenzy
+* gasworks
+* lambda_bunker
+* rapidcore
+* snark_pit
+* stalkyard
+* subtransit
+* undertow
+* boot_camp
