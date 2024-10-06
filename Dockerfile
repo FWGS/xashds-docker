@@ -1,11 +1,11 @@
 FROM debian:bookworm-slim
 
 ARG hlds_build=8308
-ARG amxmod_version=1.8.2
+ARG amxmod_version=1.9.0-git5294
 ARG jk_botti_version=1.43
 ARG hlds_url="https://github.com/DevilBoy-eXe/hlds/releases/download/$hlds_build/hlds_build_$hlds_build.zip"
 ARG metamod_url="https://github.com/mittorn/metamod-p/releases/download/1/metamod.so"
-ARG amxmod_url="http://www.amxmodx.org/release/amxmodx-$amxmod_version-base-linux.tar.gz"
+ARG amxmod_url="https://www.amxmodx.org/amxxdrop/1.9/amxmodx-$amxmod_version-base-linux.tar.gz"
 ARG jk_botti_url="http://koti.kapsi.fi/jukivili/web/jk_botti/jk_botti-$jk_botti_version-release.tar.xz"
 
 ENV XASH3D_BASEDIR=/opt/xash/xashds
