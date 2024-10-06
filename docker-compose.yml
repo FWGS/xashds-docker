@@ -1,8 +1,11 @@
 services:
-  xash-ds:
-    image: artkirienko/xashds
-    container_name: xash
+  xashds:
+    image: xashdsdocker:latest
+    build: .
+    container_name: xashds
     restart: always
-    command: +ip 0.0.0.0 +rcon_password 12345678
+    tty: true
+    stdin_open: true
+    command: +map crossfire
     ports:
       - '27015:27015/udp'
