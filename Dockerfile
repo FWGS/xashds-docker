@@ -37,7 +37,7 @@ RUN curl -sLJO "$hlds_url" \
 
 RUN git clone --recursive https://github.com/FWGS/xash3d-fwgs \
     && cd xash3d-fwgs \
-    && ARCH=i386 ./waf configure -T release -d --enable-lto \
+    && ./waf configure -T release -d --enable-lto --enable-openmp \
     && ./waf build \
     && ./waf install --destdir /opt/xash/xashds \
     && cd .. && rm -rf xash3d-fwgs
@@ -65,7 +65,6 @@ RUN curl -sqL "$jk_botti_url" | tar -C /opt/xash/xashds/valve/ -xJ \
 
 WORKDIR /opt/xash/xashds
 RUN rm -rf ./cstrike
-RUN mv valve/liblist.gam valve/gameinfo.txt
 
 # Copy default config
 COPY valve valve
