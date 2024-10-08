@@ -73,9 +73,12 @@ COPY valve valve
 FROM debian:bookworm-slim AS final
 
 ENV XASH3D_BASEDIR=/xashds
+
+RUN dpkg --add-architecture i386
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
     lib32gcc-s1 \
     lib32stdc++6 \
+    libgomp1:i386 \
     ca-certificates \
     openssl 
 
