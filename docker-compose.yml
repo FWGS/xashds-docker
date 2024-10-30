@@ -1,8 +1,8 @@
 services:
   xashds:
-    image: xashdsdocker:latest
+    image: snmetamorph/xashds-hldm:latest
     build: .
-    container_name: xashds
+    container_name: xashds-hldm
     restart: always
     tty: true
     stdin_open: true

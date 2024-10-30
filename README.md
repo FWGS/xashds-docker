@@ -3,29 +3,35 @@
 ![banner](banner.png)
 
 # Xash3D FWGS Dedicated Server Docker
-Probably, the fastest and easiest way to set up an old-school Xash3D FWGS
-Half-Life Deathmatch Dedicated Server. You don't need to know
-anything about Linux or XashDS to start a server. You just need installed Docker and this image.
+Probably, the fastest and easiest way to set up an old-school Xash3D FWGS dedicated server. You don't need to know anything about Linux or XashDS to start a server. You just need PC or VDS with installed Linux and installed Docker on it.
+
+## Supported mods
+We have plans to support more mods in the future. But currently, only Half-Life Deathmatch is supported.
 
 ## Quick Start
-> **Note:** At the moment, we don't yet publishing pre-built images on Docker Hub. Therefore, you need to build it yourself.
-
-### Building XashDS image manually
-Clone this repository and build image with Docker Compose. Just two commands.
+Clone this repository. Just two commands.
 
 ```bash
-git clone https://github.com/FWGS/xashds-docker.git && cd xashds-docker
-sudo docker compose build
+git clone https://github.com/FWGS/xashds-docker.git
+cd xashds-docker
 ```
 
-Next, you can use this Compose file below as a base for your custom configuration. If you don't need custom configuration - just ignore it and continue to next step.
+At the moment, we do not yet publishing pre-built images on Docker Hub. Therefore, you need to build it yourself with this command.
+
+In future, when we will publish pre-built images on Docker Hub, this step can be skipped.
+
+```bash
+sudo docker build --no-cache -t snmetamorph/xashds-hldm:latest .
+```
+
+Next, you can use this Docker Compose file below as a base for your custom configuration. If you don't need custom configuration - just use this preset and continue to next step.
 
 ```yaml
 services:
   xashds:
-    image: xashdsdocker:latest
+    image: snmetamorph/xashds-hldm:latest
     build: .
-    container_name: xashds
+    container_name: xashds-hldm
     restart: always
     tty: true
     stdin_open: true
@@ -34,7 +40,7 @@ services:
       - '27015:27015/udp'
 ```
 
-> **Note:** Any [server config command](http://sr-team.clan.su/K_stat/hlcommandsfull.html)
+> **Note:** any [server config command](http://sr-team.clan.su/K_stat/hlcommandsfull.html)
   can be passed to `command` section in Docker Compose file. 
 
 By default, server will start on 27015 UDP port. When you're finished with configuration and ready to start a server just run:
@@ -43,9 +49,9 @@ By default, server will start on 27015 UDP port. When you're finished with confi
 sudo docker compose up -d
 ```
 
-After that, server will automatically start on system startup and auto-restarting in case of crash.
+After that, Docker container with XashDS will be created and server will automatically start on system startup and auto-restarting in case of crash.
 
-If you want to stop a server and completely remove all containers, run:
+If you want to stop a server and completely remove all XashDS containers, run:
 ```bash
 sudo docker compose down
 ```
