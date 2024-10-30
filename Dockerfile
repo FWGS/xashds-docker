@@ -21,8 +21,7 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
     unzip \
     xz-utils \
     zip \
- && apt-get -y autoremove \
- && rm -rf /var/lib/apt/lists/*
+    && apt-get -y clean
 
 USER xash
 WORKDIR /opt/xash
@@ -49,6 +48,7 @@ RUN touch /opt/xash/xashds/valve/listip.cfg
 RUN touch /opt/xash/xashds/valve/banned.cfg
 
 # Install Metamod-P (for Xash3D by mittorn)
+# TODO: Update it to Metamod-R, it supports Xash3D since last version
 RUN mkdir -p /opt/xash/xashds/valve/addons/metamod/dlls \
     && touch /opt/xash/xashds/valve/addons/metamod/plugins.ini
 RUN curl -sqL "$metamod_url" -o /opt/xash/xashds/valve/addons/metamod/dlls/metamod.so
@@ -63,6 +63,7 @@ RUN cat /opt/xash/xashds/valve/mapcycle.txt >> /opt/xash/xashds/valve/addons/amx
 RUN curl -sqL "$jk_botti_url" | tar -C /opt/xash/xashds/valve/ -xJ \
     && echo 'linux addons/jk_botti/dlls/jk_botti_mm_i386.so' >> /opt/xash/xashds/valve/addons/metamod/plugins.ini
 
+# Remove cstrike game directory, because it's not needed
 WORKDIR /opt/xash/xashds
 RUN rm -rf ./cstrike
 
@@ -80,7 +81,8 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
     lib32stdc++6 \
     libgomp1:i386 \
     ca-certificates \
-    openssl 
+    openssl \
+    && apt-get -y clean
 
 RUN groupadd xashds && useradd -m -g xashds xashds
 USER xashds
