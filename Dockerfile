@@ -28,11 +28,10 @@ USER xash
 WORKDIR /opt/xash
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN mkdir -p /opt/xash/xashds
-
-RUN curl -sLJO "$hlds_url" \
+RUN mkdir -p /opt/xash/xashds && mkdir -p /opt/xash/xashds/valve \
+    && curl -sLJO "$hlds_url" \
     && unzip "hlds_build_$hlds_build.zip" -d "/opt/xash/hlds_build_$hlds_build" \
-    && cp -R "hlds_build_$hlds_build/hlds"/* xashds/ \
+    && cp -R "hlds_build_$hlds_build/hlds"/valve/* xashds/valve \
     && rm -rf "hlds_build_$hlds_build" "hlds_build_$hlds_build.zip"
 
 RUN git clone --recursive https://github.com/FWGS/xash3d-fwgs \
