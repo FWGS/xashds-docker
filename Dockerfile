@@ -1,12 +1,21 @@
 FROM debian:bookworm-slim AS build
 
-ARG HLDS_BUILD=8308
-ARG AMXMODX_VERSION=1.9.0-git5294
-ARG JK_BOTTI_VERSION=1.43
-ARG METAMOD_R_REF=4db16ff6
-ARG HLDS_URL="https://github.com/DevilBoy-eXe/hlds/releases/download/$HLDS_BUILD/hlds_build_$HLDS_BUILD.zip"
-ARG AMXMODX_URL="https://www.amxmodx.org/amxxdrop/1.9/amxmodx-$AMXMODX_VERSION-base-linux.tar.gz"
-ARG JK_BOTTI_URL="http://koti.kapsi.fi/jukivili/web/jk_botti/jk_botti-$JK_BOTTI_VERSION-release.tar.xz"
+ARG HLDS_BUILD="8308"
+ARG AMXMODX_VERSION="1.9.0-git5294"
+ARG JK_BOTTI_VERSION="1.43"
+ARG METAMODR_GIT_REF="4db16ff6"
+
+ARG AMXMODX_FILENAME="amxmodx-$AMXMODX_VERSION-base-linux.tar.gz"
+ARG AMXMODX_SHA256="b9467a63aa92fc22330c06817d9059c4462abc3ecb50d39538dda21c8f27bd58"
+ARG AMXMODX_URL="https://www.amxmodx.org/amxxdrop/1.9/$AMXMODX_FILENAME"
+
+ARG HLDS_FILENAME="hlds_build_$HLDS_BUILD.zip"
+ARG HLDS_SHA256="03a1035e6a479ccf0a64e842fe0f0315f1f2f9e0160619127a61ae68cdb37df9"
+ARG HLDS_URL="https://github.com/DevilBoy-eXe/hlds/releases/download/$HLDS_BUILD/$HLDS_FILENAME"
+
+ARG JK_BOTTI_FILENAME="jk_botti-$JK_BOTTI_VERSION-release.tar.xz"
+ARG JK_BOTTI_SHA256="549fc87ea84d27c448a537662b0c622f8806d5657dd6bc8b6d92241b1d338767"
+ARG JK_BOTTI_URL="http://koti.kapsi.fi/jukivili/web/jk_botti/$JK_BOTTI_FILENAME"
 
 RUN groupadd -r xash && useradd -r -g xash -m -d /opt/xash xash
 RUN usermod -a -G games xash
@@ -34,11 +43,13 @@ USER xash
 WORKDIR /opt/xash
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+# Download & validate HLDS build
 RUN mkdir -p /opt/xash/xashds && mkdir -p /opt/xash/xashds/valve \
     && curl -sLJO "$HLDS_URL" \
-    && unzip "hlds_build_$HLDS_BUILD.zip" -d "/opt/xash/hlds_build_$HLDS_BUILD" \
+    && echo "$HLDS_SHA256  $HLDS_FILENAME" | sha256sum -c - \
+    && unzip "$HLDS_FILENAME" -d "/opt/xash/hlds_build_$HLDS_BUILD" \
     && cp -R "hlds_build_$HLDS_BUILD/hlds"/valve/* xashds/valve \
-    && rm -rf "hlds_build_$HLDS_BUILD" "hlds_build_$HLDS_BUILD.zip"
+    && rm -rf "hlds_build_$HLDS_BUILD" "$HLDS_FILENAME"
 
 # Compiling XashDS from sources
 RUN git clone --recursive https://github.com/FWGS/xash3d-fwgs \
@@ -56,7 +67,7 @@ RUN mkdir -p /opt/xash/xashds/valve/addons/metamod/dlls \
 # Compiling & installing Metamod-R
 RUN git clone --recursive https://github.com/rehlds/Metamod-R.git \
     && cd Metamod-R \
-    && git checkout $METAMOD_R_REF \
+    && git checkout $METAMODR_GIT_REF \
     && cp metamod/extra/config.ini /opt/xash/xashds/valve/addons/metamod/config.ini \
     && mkdir ./build \
     && cd build \
@@ -70,20 +81,23 @@ RUN git clone --recursive https://github.com/rehlds/Metamod-R.git \
 RUN touch /opt/xash/xashds/valve/listip.cfg
 RUN touch /opt/xash/xashds/valve/banned.cfg
 
-# Install AMX mod X
-RUN curl -sqL "$AMXMODX_URL" | tar -C /opt/xash/xashds/valve/ -zxvf - \
-    && echo 'linux addons/amxmodx/dlls/amxmodx_mm_i386.so' >> /opt/xash/xashds/valve/addons/metamod/plugins.ini
+# Install AMX Mod X
+RUN curl -sLO "$AMXMODX_URL" \
+    && echo "$AMXMODX_SHA256  $AMXMODX_FILENAME" | sha256sum -c - \
+    && tar -C /opt/xash/xashds/valve/ -zxvf "$AMXMODX_FILENAME" \
+    && echo 'linux addons/amxmodx/dlls/amxmodx_mm_i386.so' >> /opt/xash/xashds/valve/addons/metamod/plugins.ini \
+    && rm -f "$AMXMODX_FILENAME"
 RUN cat /opt/xash/xashds/valve/mapcycle.txt >> /opt/xash/xashds/valve/addons/amxmodx/configs/maps.ini
 
 # Install jk_botti
-RUN curl -sqL "$JK_BOTTI_URL" | tar -C /opt/xash/xashds/valve/ -xJ \
+RUN curl -sLO "$JK_BOTTI_URL" \
+    && echo "$JK_BOTTI_SHA256  $JK_BOTTI_FILENAME" | sha256sum -c - \
+    && tar -C /opt/xash/xashds/valve/ -xJf "$JK_BOTTI_FILENAME" \
+    && rm -f "$JK_BOTTI_FILENAME" \
     && echo 'linux addons/jk_botti/dlls/jk_botti_mm_i386.so' >> /opt/xash/xashds/valve/addons/metamod/plugins.ini
 
-# Remove cstrike game directory, because it's not needed
-WORKDIR /opt/xash/xashds
-RUN rm -rf ./cstrike
-
 # Copy default config
+WORKDIR /opt/xash/xashds
 COPY valve valve
 
 # Second stage, used for running compiled XashDS
