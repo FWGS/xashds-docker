@@ -1,30 +1,14 @@
 [![GitHub Actions Docker Image CI](https://github.com/FWGS/xashds-docker/workflows/Docker%20Image%20CI/badge.svg)](https://github.com/FWGS/xashds-docker/actions)
-[![HitCount](http://hits.dwyl.com/FWGS/xashds-docker.svg)](http://hits.dwyl.com/FWGS/xashds-docker)
 ![banner](banner.png)
 
 # Xash3D FWGS Dedicated Server Docker
-Probably, the fastest and easiest way to set up an old-school Xash3D FWGS dedicated server. You don't need to know anything about Linux or XashDS to start a server. You just need PC or VDS with installed Linux and installed Docker on it.
+Probably, the fastest and easiest way to set up an old-school Xash3D FWGS dedicated server. You don't need to know anything about Linux or XashDS to start a server. You just need PC or VDS on `x86_64` architecture with installed Linux and Docker.
 
 ## Supported mods
 We have plans to support more mods in the future. But currently, only Half-Life Deathmatch is supported.
 
 ## Quick Start
-Clone this repository. Just two commands.
-
-```bash
-git clone https://github.com/FWGS/xashds-docker.git
-cd xashds-docker
-```
-
-At the moment, we do not yet publishing pre-built images on Docker Hub. Therefore, you need to build it yourself with this command.
-
-In future, when we will publish pre-built images on Docker Hub, this step can be skipped.
-
-```bash
-sudo docker build --no-cache -t snmetamorph/xashds-hldm:latest .
-```
-
-Next, you can use this Docker Compose file below as a base for your custom configuration. If you don't need custom configuration - just use this preset and continue to next step.
+You can use this Docker Compose file below as a base for your custom configuration. If you don't need custom configuration - just use this preset as is and proceed to next steps.
 
 ```yaml
 services:
@@ -55,11 +39,18 @@ If you want to stop a server and completely remove all XashDS containers, run:
 ```bash
 sudo docker compose down
 ```
+## Building image manually
+
+```bash
+git clone https://github.com/FWGS/xashds-docker.git
+cd xashds-docker
+sudo docker build --no-cache -t snmetamorph/xashds-hldm:latest .
+```
 
 ## What is included
 * Game assets from [HLDS](https://github.com/DevilBoy-eXe/hlds), build number `8308`
 * [Xash3D FWGS](https://github.com/FWGS/xash3d-fwgs) dedicated server, latest version
-* [Metamod-R](https://github.com/rehlds/Metamod-R), version from `2025-07-22`
+* [Metamod-R](https://github.com/rehlds/Metamod-R), version `1.3.0.172`
 * [AMX Mod X](https://github.com/alliedmodders/amxmodx), version `1.9.0.5294`
 * [jk_botti](https://github.com/Bots-United/jk_botti), version `1.43`
 * Minimal config preset, such as `mp_timelimit`, `public 1` and mapcycle
