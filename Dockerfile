@@ -21,7 +21,8 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
     unzip \
     xz-utils \
     zip \
-    && apt-get -y clean
+    && apt-get -y clean \
+    && rm -rf /var/lib/apt/lists/*
 
 USER xash
 WORKDIR /opt/xash
@@ -82,7 +83,8 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
     libgomp1:i386 \
     ca-certificates \
     openssl \
-    && apt-get -y clean
+    && apt-get -y clean \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd xashds && useradd -m -g xashds xashds
 USER xashds
