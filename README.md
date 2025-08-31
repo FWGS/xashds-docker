@@ -59,8 +59,7 @@ sudo docker compose down
 ## What is included
 * Game assets from [HLDS](https://github.com/DevilBoy-eXe/hlds), build number `8308`
 * [Xash3D FWGS](https://github.com/FWGS/xash3d-fwgs) dedicated server, latest version
-* [Metamod-p](https://github.com/mittorn/metamod-p) for Xash3D by mittorn,
-  version `1.21p37`
+* [Metamod-R](https://github.com/rehlds/Metamod-R), version from `2025-07-22`
 * [AMX Mod X](https://github.com/alliedmodders/amxmodx), version `1.9.0.5294`
 * [jk_botti](https://github.com/Bots-United/jk_botti), version `1.43`
 * Minimal config preset, such as `mp_timelimit`, `public 1` and mapcycle
