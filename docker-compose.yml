@@ -1,6 +1,6 @@
 services:
   xashds:
-    image: snmetamorph/xashds-hldm:latest
+    image: snmetamorph/xashds-hldm:latest-64-bit
     build: .
     container_name: xashds-hldm
     restart: always
