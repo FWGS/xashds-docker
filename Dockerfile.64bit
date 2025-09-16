@@ -1,0 +1,108 @@
+FROM debian:bookworm-slim AS build
+
+ARG HLDS_BUILD="8308"
+ARG METAMODR_GIT_REF="4db16ff6"
+ARG HLSDK_GIT_REF="895b28d0"
+
+ARG HLDS_FILENAME="hlds_build_$HLDS_BUILD.zip"
+ARG HLDS_SHA256="03a1035e6a479ccf0a64e842fe0f0315f1f2f9e0160619127a61ae68cdb37df9"
+ARG HLDS_URL="https://github.com/DevilBoy-eXe/hlds/releases/download/$HLDS_BUILD/$HLDS_FILENAME"
+
+RUN groupadd -r xash && useradd -r -g xash -m -d /opt/xash xash
+RUN usermod -a -G games xash
+
+RUN apt-get -y update && apt-get install -y --no-install-recommends \
+    build-essential \
+    ca-certificates \
+    curl \
+    cmake \
+    ninja-build \
+    git \
+    g++-multilib \
+    python3 \
+    unzip \
+    xz-utils \
+    zip \
+    && apt-get -y clean \
+    && rm -rf /var/lib/apt/lists/*
+
+USER xash
+WORKDIR /opt/xash
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# Download & validate HLDS build
+RUN mkdir -p /opt/xash/xashds && mkdir -p /opt/xash/xashds/valve \
+    && curl -sLJO "$HLDS_URL" \
+    && echo "$HLDS_SHA256  $HLDS_FILENAME" | sha256sum -c - \
+    && unzip "$HLDS_FILENAME" -d "/opt/xash/hlds_build_$HLDS_BUILD" \
+    && cp -R "hlds_build_$HLDS_BUILD/hlds"/valve/* xashds/valve \
+    && rm -rf "hlds_build_$HLDS_BUILD" "$HLDS_FILENAME"
+
+# Compiling XashDS from sources
+RUN git clone --recursive https://github.com/FWGS/xash3d-fwgs \
+    && cd xash3d-fwgs \
+    && ./waf configure -T release -8 -d --enable-lto --enable-openmp \
+    && ./waf build \
+    && ./waf install --destdir /opt/xash/xashds \
+    && cd .. && rm -rf xash3d-fwgs
+
+# Compiling hlsdk-portable from sources
+RUN git clone --recursive https://github.com/FWGS/hlsdk-portable \
+    && cd hlsdk-portable \
+    && git checkout ${HLSDK_GIT_REF} \
+    && mkdir build && cd build \
+    && cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="/opt/xash/xashds" -D64BIT=ON \
+    && cmake --build . --target all \
+    && cmake --build . --target install \
+    && cd ../.. && rm -rf hlsdk-portable
+
+# Prepare directories & configuration files for Metamod-R
+#RUN mkdir -p /opt/xash/xashds/valve/addons/metamod/dlls \
+#    && touch /opt/xash/xashds/valve/addons/metamod/plugins.ini \
+#    && sed -i 's/dlls\/hl\.so/addons\/metamod\/dlls\/metamod.so/g' /opt/xash/xashds/valve/liblist.gam
+
+# TODO: Metamod-R needs porting to LP64 architectures
+# Compiling & installing Metamod-R
+#RUN git clone --recursive https://github.com/rehlds/Metamod-R.git \
+#     && cd Metamod-R \
+#     && git checkout $METAMODR_GIT_REF \
+#     && cp metamod/extra/config.ini /opt/xash/xashds/valve/addons/metamod/config.ini \
+#     && mkdir ./build \
+#     && cd build \
+#     && cmake .. -DCMAKE_BUILD_TYPE=COMPAT_GLIBC \
+#     && cmake --build . --parallel $(nproc) \
+#     && cp metamod/metamod_i386.so /opt/xash/xashds/valve/addons/metamod/dlls/metamod.so
+
+# Fix warnings:
+# couldn't exec listip.cfg
+# couldn't exec banned.cfg
+RUN touch /opt/xash/xashds/valve/listip.cfg
+RUN touch /opt/xash/xashds/valve/banned.cfg
+
+# Copy default config
+WORKDIR /opt/xash/xashds
+COPY valve valve
+
+# Second stage, used for running compiled XashDS
+FROM debian:bookworm-slim AS final
+
+ENV XASH3D_BASEDIR=/xashds
+
+RUN apt-get -y update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    openssl \
+    libgomp1 \
+    && apt-get -y clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN groupadd xashds && useradd -m -g xashds xashds
+USER xashds
+WORKDIR /xashds
+COPY --chown=xashds:xashds --from=build /opt/xash/xashds .
+EXPOSE 27015/udp
+
+# Start server
+ENTRYPOINT ["./xash", "+ip", "0.0.0.0", "-port", "27015"]
+
+# Default start parameters
+CMD ["+map crossfire"]
