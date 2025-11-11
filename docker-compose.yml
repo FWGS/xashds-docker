@@ -1,7 +1,9 @@
 services:
   xashds:
     image: snmetamorph/xashds-hldm:latest
-    build: .
+    build:
+      context: .
+      dockerfile: ./Dockerfile
     container_name: xashds-hldm
     restart: always
     tty: true

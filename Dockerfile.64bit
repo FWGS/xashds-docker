@@ -1,7 +1,7 @@
 FROM debian:bookworm-slim AS build
 
 ARG HLDS_BUILD="8308"
-ARG METAMODR_GIT_REF="4db16ff6"
+ARG METAMOD_GIT_REF="7bccb19ca"
 ARG HLSDK_GIT_REF="895b28d0"
 
 ARG HLDS_FILENAME="hlds_build_$HLDS_BUILD.zip"
@@ -46,7 +46,7 @@ RUN git clone --recursive https://github.com/FWGS/xash3d-fwgs \
     && ./waf install --destdir /opt/xash/xashds \
     && cd .. && rm -rf xash3d-fwgs
 
-# Compiling hlsdk-portable from sources
+# Compiling hlsdk-portable
 RUN git clone --recursive https://github.com/FWGS/hlsdk-portable \
     && cd hlsdk-portable \
     && git checkout ${HLSDK_GIT_REF} \
@@ -56,22 +56,18 @@ RUN git clone --recursive https://github.com/FWGS/hlsdk-portable \
     && cmake --build . --target install \
     && cd ../.. && rm -rf hlsdk-portable
 
-# Prepare directories & configuration files for Metamod-R
-#RUN mkdir -p /opt/xash/xashds/valve/addons/metamod/dlls \
-#    && touch /opt/xash/xashds/valve/addons/metamod/plugins.ini \
-#    && sed -i 's/dlls\/hl\.so/addons\/metamod\/dlls\/metamod.so/g' /opt/xash/xashds/valve/liblist.gam
+# Prepare directories & configuration files for Metamod
+RUN sed -i 's/dlls\/hl\.so/addons\/metamod\/metamod.so/g' /opt/xash/xashds/valve/liblist.gam
 
-# TODO: Metamod-R needs porting to LP64 architectures
-# Compiling & installing Metamod-R
-#RUN git clone --recursive https://github.com/rehlds/Metamod-R.git \
-#     && cd Metamod-R \
-#     && git checkout $METAMODR_GIT_REF \
-#     && cp metamod/extra/config.ini /opt/xash/xashds/valve/addons/metamod/config.ini \
-#     && mkdir ./build \
-#     && cd build \
-#     && cmake .. -DCMAKE_BUILD_TYPE=COMPAT_GLIBC \
-#     && cmake --build . --parallel $(nproc) \
-#     && cp metamod/metamod_i386.so /opt/xash/xashds/valve/addons/metamod/dlls/metamod.so
+# Compiling & installing Metamod-FWGS
+RUN git clone --recursive https://github.com/FWGS/metamod-fwgs.git \
+    && cd metamod-fwgs \
+    && git checkout $METAMOD_GIT_REF \
+    && mkdir ./build \
+    && cd build \
+    && cmake .. --preset linux-x64-release \
+    && cmake --build . --parallel $(nproc) \
+    && cmake --install . --prefix /opt/xash/xashds/valve/addons/metamod
 
 # Fix warnings:
 # couldn't exec listip.cfg
