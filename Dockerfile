@@ -103,6 +103,13 @@ COPY valve valve
 # Second stage, used for running compiled XashDS
 FROM debian:bookworm-slim AS final
 
+LABEL name="xashds-docker" \
+      maintainer="FWGS" \
+      description="Xash3D FWGS dedicated server engine build." \
+      url="https://github.com/FWGS" \
+      org.label-schema.vcs-url="https://github.com/FWGS/xashds-docker" \
+      org.opencontainers.image.source="https://github.com/FWGS/xashds-docker"
+
 ENV XASH3D_BASEDIR=/xashds
 
 RUN dpkg --add-architecture i386
