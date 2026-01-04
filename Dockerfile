@@ -1,21 +1,20 @@
 FROM debian:bookworm-slim AS build
 
-ARG HLDS_BUILD="8308"
-ARG AMXMODX_VERSION="1.9.0-git5294"
-ARG JK_BOTTI_VERSION="1.43"
-ARG METAMODR_GIT_REF="4db16ff6"
-
-ARG AMXMODX_FILENAME="amxmodx-$AMXMODX_VERSION-base-linux.tar.gz"
-ARG AMXMODX_SHA256="b9467a63aa92fc22330c06817d9059c4462abc3ecb50d39538dda21c8f27bd58"
-ARG AMXMODX_URL="https://www.amxmodx.org/amxxdrop/1.9/$AMXMODX_FILENAME"
-
-ARG HLDS_FILENAME="hlds_build_$HLDS_BUILD.zip"
-ARG HLDS_SHA256="03a1035e6a479ccf0a64e842fe0f0315f1f2f9e0160619127a61ae68cdb37df9"
-ARG HLDS_URL="https://github.com/DevilBoy-eXe/hlds/releases/download/$HLDS_BUILD/$HLDS_FILENAME"
-
-ARG JK_BOTTI_FILENAME="jk_botti-$JK_BOTTI_VERSION-release.tar.xz"
-ARG JK_BOTTI_SHA256="549fc87ea84d27c448a537662b0c622f8806d5657dd6bc8b6d92241b1d338767"
-ARG JK_BOTTI_URL="http://koti.kapsi.fi/jukivili/web/jk_botti/$JK_BOTTI_FILENAME"
+ARG XASHDS_GIT_REF="master" \
+    XASHDS_BUILD_TYPE="release" \
+    AMXMODX_VERSION="1.9.0-git5294" \
+    AMXMODX_FILENAME="amxmodx-$AMXMODX_VERSION-base-linux.tar.gz" \
+    AMXMODX_SHA256="b9467a63aa92fc22330c06817d9059c4462abc3ecb50d39538dda21c8f27bd58" \
+    AMXMODX_URL="https://www.amxmodx.org/amxxdrop/1.9/$AMXMODX_FILENAME" \
+    HLDS_BUILD="8308" \
+    HLDS_FILENAME="hlds_build_$HLDS_BUILD.zip" \
+    HLDS_SHA256="03a1035e6a479ccf0a64e842fe0f0315f1f2f9e0160619127a61ae68cdb37df9" \
+    HLDS_URL="https://github.com/DevilBoy-eXe/hlds/releases/download/$HLDS_BUILD/$HLDS_FILENAME" \
+    JK_BOTTI_VERSION="1.43" \
+    JK_BOTTI_FILENAME="jk_botti-$JK_BOTTI_VERSION-release.tar.xz" \
+    JK_BOTTI_SHA256="549fc87ea84d27c448a537662b0c622f8806d5657dd6bc8b6d92241b1d338767" \
+    JK_BOTTI_URL="http://koti.kapsi.fi/jukivili/web/jk_botti/$JK_BOTTI_FILENAME" \
+    METAMODR_GIT_REF="4db16ff6"
 
 RUN groupadd -r xash && useradd -r -g xash -m -d /opt/xash xash
 RUN usermod -a -G games xash
@@ -54,7 +53,8 @@ RUN mkdir -p /opt/xash/xashds && mkdir -p /opt/xash/xashds/valve \
 # Compiling XashDS from sources
 RUN git clone --recursive https://github.com/FWGS/xash3d-fwgs \
     && cd xash3d-fwgs \
-    && ./waf configure -T release -d --enable-lto --enable-openmp \
+    && git checkout ${XASHDS_GIT_REF} \
+    && ./waf configure -T ${XASHDS_BUILD_TYPE} -d --enable-lto --enable-openmp \
     && ./waf build \
     && ./waf install --destdir /opt/xash/xashds \
     && cd .. && rm -rf xash3d-fwgs
@@ -67,7 +67,7 @@ RUN mkdir -p /opt/xash/xashds/valve/addons/metamod/dlls \
 # Compiling & installing Metamod-R
 RUN git clone --recursive https://github.com/rehlds/Metamod-R.git \
     && cd Metamod-R \
-    && git checkout $METAMODR_GIT_REF \
+    && git checkout ${METAMODR_GIT_REF} \
     && cp metamod/extra/config.ini /opt/xash/xashds/valve/addons/metamod/config.ini \
     && mkdir ./build \
     && cd build \

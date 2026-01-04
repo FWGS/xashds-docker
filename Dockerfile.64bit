@@ -1,12 +1,15 @@
 FROM debian:bookworm-slim AS build
 
-ARG HLDS_BUILD="8308"
-ARG METAMOD_GIT_REF="master"
-ARG HLSDK_GIT_REF="895b28d0"
-
-ARG HLDS_FILENAME="hlds_build_$HLDS_BUILD.zip"
-ARG HLDS_SHA256="03a1035e6a479ccf0a64e842fe0f0315f1f2f9e0160619127a61ae68cdb37df9"
-ARG HLDS_URL="https://github.com/DevilBoy-eXe/hlds/releases/download/$HLDS_BUILD/$HLDS_FILENAME"
+ARG XASHDS_GIT_REF="master" \
+    XASHDS_BUILD_TYPE="release" \
+    METAMOD_GIT_REF="master" \
+    METAMOD_BUILD_TYPE="linux-x64-release" \
+    HLSDK_GIT_REF="895b28d0" \
+    HLSDK_BUILD_TYPE="Release" \
+    HLDS_BUILD="8308" \
+    HLDS_FILENAME="hlds_build_$HLDS_BUILD.zip" \
+    HLDS_SHA256="03a1035e6a479ccf0a64e842fe0f0315f1f2f9e0160619127a61ae68cdb37df9" \
+    HLDS_URL="https://github.com/DevilBoy-eXe/hlds/releases/download/$HLDS_BUILD/$HLDS_FILENAME"
 
 RUN groupadd -r xash && useradd -r -g xash -m -d /opt/xash xash
 RUN usermod -a -G games xash
@@ -41,7 +44,8 @@ RUN mkdir -p /opt/xash/xashds && mkdir -p /opt/xash/xashds/valve \
 # Compiling XashDS from sources
 RUN git clone --recursive https://github.com/FWGS/xash3d-fwgs \
     && cd xash3d-fwgs \
-    && ./waf configure -T release -8 -d --enable-lto --enable-openmp \
+    && git checkout ${XASHDS_GIT_REF} \
+    && ./waf configure -T ${XASHDS_BUILD_TYPE} -8 -d --enable-lto --enable-openmp \
     && ./waf build \
     && ./waf install --destdir /opt/xash/xashds \
     && cd .. && rm -rf xash3d-fwgs
@@ -51,7 +55,7 @@ RUN git clone --recursive https://github.com/FWGS/hlsdk-portable \
     && cd hlsdk-portable \
     && git checkout ${HLSDK_GIT_REF} \
     && mkdir build && cd build \
-    && cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="/opt/xash/xashds" -D64BIT=ON \
+    && cmake .. -G Ninja -DCMAKE_BUILD_TYPE=${HLSDK_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX="/opt/xash/xashds" -D64BIT=ON \
     && cmake --build . --target all \
     && cmake --build . --target install \
     && cd ../.. && rm -rf hlsdk-portable
@@ -62,10 +66,10 @@ RUN sed -i 's/dlls\/hl\.so/addons\/metamod\/metamod.so/g' /opt/xash/xashds/valve
 # Compiling & installing Metamod-FWGS
 RUN git clone --recursive https://github.com/FWGS/metamod-fwgs.git \
     && cd metamod-fwgs \
-    && git checkout $METAMOD_GIT_REF \
+    && git checkout ${METAMOD_GIT_REF} \
     && mkdir ./build \
     && cd build \
-    && cmake .. --preset linux-x64-release \
+    && cmake .. --preset ${METAMOD_BUILD_TYPE} \
     && cmake --build . --parallel $(nproc) \
     && cmake --install . --prefix /opt/xash/xashds/valve/addons/metamod
 
