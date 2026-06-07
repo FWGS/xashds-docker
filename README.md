@@ -13,7 +13,7 @@ You can use this Docker Compose file below as a base for your custom configurati
 ```yaml
 services:
   xashds:
-    image: snmetamorph/xashds-hldm:latest
+    image: ghcr.io/fwgs/xashds-hldm:latest
     build: .
     container_name: xashds-hldm
     restart: always
